@@ -1,0 +1,36 @@
+{% extends 'products/base.html' %}
+
+{% block content %}
+<h2>Welcome, {{ user.username }}!</h2>
+<h3>Your Products</h3>
+<div class="row">
+    {% for product in products %}
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <p class="card-text">Price: ${{ product.price }}</p>
+                    <p class="card-text">Stock: {{ product.stock }}</p>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<h3>Orders for Your Products</h3>
+<div class="row">
+    {% for order in orders %}
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Order ID: {{ order.id }}</h5>
+                    <p class="card-text">Product: {{ order.product.name }}</p>
+                    <p class="card-text">Quantity: {{ order.quantity }}</p>
+                    <p class="card-text">Status: {{ order.status }}</p>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

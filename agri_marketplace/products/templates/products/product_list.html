@@ -1,0 +1,167 @@
+{% extends 'products/base.html' %}
+
+{% block content %}
+<div class="row">
+    <!-- Sidebar -->
+    <aside class="col-md-3">
+        <h4>Categories</h4>
+        <form method="get">
+            <ul class="list-group">
+                <!-- 'All Categories' option -->
+                <li class="list-group-item">
+                    <label>
+                        <input 
+                            type="radio" 
+                            name="category" 
+                            value="" 
+                            onchange="this.form.submit()" 
+                            {% if not category_id %}checked{% endif %}>
+                        All Categories
+                    </label>
+                </li>
+                
+                <!-- Dynamically display categories with product count -->
+                {% for category in categories %}
+                <li class="list-group-item {% if category_id == category.id|stringformat:"s" %}list-group-item-active{% endif %}">
+                    <label>
+                        <input 
+                            type="radio" 
+                            name="category" 
+                            value="{{ category.id }}" 
+                            onchange="this.form.submit()" 
+                            {% if category_id == category.id|stringformat:"s" %}checked{% endif %}>
+                        {{ category.name }} 
+                        <span class="badge bg-secondary">{{ category.product_count }}</span>
+                    </label>
+                </li>
+                {% endfor %}
+            </ul>
+
+            <!-- Search bar -->
+            <div class="mt-3">
+                <input 
+                    type="text" 
+                    name="search" 
+                    class="form-control" 
+                    placeholder="Search products..." 
+                    value="{{ search_query }}" 
+                    onkeydown="if(event.key === 'Enter') this.form.submit()">
+            </div>
+        </form>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="col-md-9">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="text-center m-0">Products</h2>
+            
+            <!-- Sort Options -->
+            <form method="get" class="d-flex align-items-center">
+                <!-- Preserve current filters -->
+                <input type="hidden" name="category" value="{{ category_id }}">
+                <input type="hidden" name="search" value="{{ search_query }}">
+            
+                <!-- Price Range Inputs -->
+                <div class="d-flex me-2">
+                    <input 
+                        type="number" 
+                        name="min_price" 
+                        class="form-control me-2" 
+                        placeholder="Min Price"
+                        value="{{ request.GET.min_price }}">
+                    <input 
+                        type="number" 
+                        name="max_price" 
+                        class="form-control" 
+                        placeholder="Max Price"
+                        value="{{ request.GET.max_price }}">
+                </div>
+            
+                <!-- Sort Options -->
+                <select name="sort" class="form-select me-2" onchange="this.form.submit()">
+                    <option value="">Sort By</option>
+                    <option value="name" {% if sort_option == 'name' %}selected{% endif %}>Name</option>
+                    <option value="price" {% if sort_option == 'price' %}selected{% endif %}>Price</option>
+                    <option value="stock" {% if sort_option == 'stock' %}selected{% endif %}>Stock</option>
+                </select>
+            </form>
+        </div>
+
+        <!-- Products Grid -->
+        {% if products %}
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            {% for product in products %}
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <img 
+                        src="{{ product.image.url }}" 
+                        class="card-img-top" 
+                        alt="{{ product.name }}">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ product.name }}</h5>
+                        <p class="card-text mb-1">Price: ${{ product.price }}</p>
+                        <p class="card-text mb-3">
+                            {% if product.stock == 0 %}
+                                <span class="text-danger">Out of Stock</span>
+                            {% else %}
+                                Stock: {{ product.stock }}
+                            {% endif %}
+                        </p>
+                        <div class="d-flex justify-content-between">
+                            <a 
+                                href="{% url 'product_detail' product.id %}" 
+                                class="btn btn-success"
+                                data-bs-toggle="tooltip" 
+                                title="View more details about {{ product.name }}">
+                                View Details
+                            </a>
+                            <a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary">
+                                Add to Cart
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if products.has_previous %}
+                <li class="page-item">
+                    <a 
+                        class="page-link" 
+                        href="?page={{ products.previous_page_number }}&category={{ category_id }}&search={{ search_query }}&sort={{ sort_option }}" 
+                        aria-label="Previous">
+                        &laquo;
+                    </a>
+                </li>
+                {% endif %}
+                {% for page_num in products.paginator.page_range %}
+                <li class="page-item {% if products.number == page_num %}active{% endif %}">
+                    <a 
+                        class="page-link" 
+                        href="?page={{ page_num }}&category={{ category_id }}&search={{ search_query }}&sort={{ sort_option }}">
+                        {{ page_num }}
+                    </a>
+                </li>
+                {% endfor %}
+                {% if products.has_next %}
+                <li class="page-item">
+                    <a 
+                        class="page-link" 
+                        href="?page={{ products.next_page_number }}&category={{ category_id }}&search={{ search_query }}&sort={{ sort_option }}" 
+                        aria-label="Next">
+                        &raquo;
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% else %}
+        <p class="text-center">No products available.</p>
+        {% endif %}
+    </main>
+</div>
+{% endblock %}

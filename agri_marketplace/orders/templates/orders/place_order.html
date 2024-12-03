@@ -1,0 +1,37 @@
+{% extends 'products/base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h2>Place Order</h2>
+        <p><strong>Product:</strong> {{ product.name }}</p>
+        <p><strong>Price:</strong> ${{ product.price }}</p>
+        <p><strong>Stock:</strong> {{ product.stock }}</p>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="quantity">Quantity:</label>
+                <input type="number" name="quantity" id="quantity" class="form-control" min="1" max="{{ product.stock }}" required>
+            </div>
+            <button type="submit" class="btn btn-success btn-block mt-3">Confirm Order</button>
+        </form>
+        {% if error %}
+            <p class="text-danger mt-2">{{ error }}</p>
+        {% endif %}
+    </div>
+</div>
+
+<h3>Leave a Review</h3>
+<form method="post" action="{% url 'add_review' product.id %}">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="rating">Rating:</label>
+        <input type="number" name="rating" id="rating" class="form-control" min="1" max="5" required>
+    </div>
+    <div class="form-group">
+        <label for="comment">Comment:</label>
+        <textarea name="comment" id="comment" class="form-control" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-success mt-3">Submit Review</button>
+</form>
+
+{% endblock %}

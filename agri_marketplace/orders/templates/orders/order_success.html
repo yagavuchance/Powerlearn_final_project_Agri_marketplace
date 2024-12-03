@@ -1,0 +1,7 @@
+<h1>Order Success</h1>
+<p>Thank you for your order!</p>
+<p><strong>Order ID:</strong> {{ order.id }}</p>
+<p><strong>Product:</strong> {{ order.product.name }}</p>
+<p><strong>Quantity:</strong> {{ order.quantity }}</p>
+<p><strong>Status:</strong> {{ order.status }}</p>
+<a href="{% url 'product_list' %}">Continue Shopping</a>

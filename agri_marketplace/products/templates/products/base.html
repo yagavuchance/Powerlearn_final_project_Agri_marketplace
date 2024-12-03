@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agri Marketplace</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <script src="{% static '/js/main.js' %}"></script>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success shadow">
+        <div class="container-fluid">
+            <!-- Brand Logo -->
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'product_list' %}">
+                <img src="{% static 'images/logo.png' %}" alt="Agri Marketplace" width="30" height="30" class="me-2">
+                <span>Agri Marketplace</span>
+            </a>
+
+            <!-- Mobile Hamburger Menu -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Navbar Links -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <!-- Search Bar -->
+                    <li class="nav-item me-3">
+                        <form class="d-flex" method="get" action="{% url 'product_list' %}">
+                            <input class="form-control me-2" type="search" name="search" placeholder="Search products..." aria-label="Search">
+                            <button class="btn btn-outline-light" type="submit">Search</button>
+                        </form>
+                    </li>
+
+                    <!-- Authentication Links -->
+                    {% if user.is_authenticated %}
+                        {% if user.profile.is_supplier %}
+                            <li class="nav-item"><a class="nav-link" href="{% url 'supplier_dashboard' %}">Supplier Dashboard</a></li>
+                        {% else %}
+                            <li class="nav-item"><a class="nav-link" href="{% url 'farmer_dashboard' %}">Farmer Dashboard</a></li>
+                        {% endif %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'register' %}">Register</a></li>
+                    {% endif %}
+
+                   <!-- Cart Icon in Navbar -->
+<li class="nav-item">
+    <a class="nav-link position-relative" href="{% url 'cart_detail' %}" aria-label="View cart">
+        <i class="bi bi-cart fs-4"></i>
+        {% if user.is_authenticated %}
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-badge">
+                {{ user.cart.cart_items.count }}
+                <span class="visually-hidden">items in cart</span>
+            </span>
+        {% endif %}
+    </a>
+</li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Content -->
+    <div class="container mt-4">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-success text-white text-center py-3">
+        <p>&copy; 2024 Agri Marketplace. All rights reserved.</p>
+    </footer>
+
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
