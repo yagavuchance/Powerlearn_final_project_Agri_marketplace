@@ -4,6 +4,7 @@ from .models import Order
 from products.models import Product
 from cart.models import Cart, CartItem  
 from .models import Order, OrderItem # Keep the import for Order and OrderItem
+from django.contrib import messages
 
 
 @login_required(login_url='/users/login/')
@@ -22,7 +23,7 @@ def place_order(request):
 
     # Create the order (without product/quantity)
     order = Order.objects.create(
-        customer=request.user,  # Use the logged-in user as the customer
+        user=request.user,  # Use the logged-in user as the customer
         total_price=total_price,  # Store the total price
         status='Pending'
     )
@@ -47,11 +48,25 @@ def place_order(request):
 
 def order_success(request, order_id):
     # Retrieve the specific order by its ID
-    order = get_object_or_404(Order, id=order_id, customer=request.user)
+    order = get_object_or_404(Order, id=order_id, user=request.user)
     return render(request, 'orders/order_success.html', {'order': order})
 
 @login_required(login_url='/users/login/')
 def order_confirmation(request, order_id):
-    order = get_object_or_404(Order, id=order_id, customer=request.user)
+    order = get_object_or_404(Order, id=order_id, user=request.user)
     return render(request, 'orders/order_confirmation.html', {'order': order})
+
+@login_required
+def cancel_order(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)  # Ensure the order belongs to the user
+
+    if order.status in ["Pending", "Processing"]:
+        order.status = "Canceled"  # Update the status
+        order.save()
+        messages.success(request, f"Order {order.id} has been successfully canceled.")
+    else:
+        messages.error(request, "This order cannot be canceled.")
+
+    return redirect('my_orders')
+
 

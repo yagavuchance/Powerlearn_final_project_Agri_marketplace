@@ -4,14 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agri Marketplace</title>
+    <title>Supplier Dashboard | Agri Marketplace</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <!-- Custom Styles -->
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
-    <script src="{% static '/js/main.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
 </head>
 <body>
     <!-- Navbar -->
@@ -19,15 +19,15 @@
         <div class="container-fluid">
             <!-- Brand Logo -->
             <a class="navbar-brand d-flex align-items-center" href="{% url 'product_list' %}">
-                <img src="{% static 'images/logo.png' %}" alt="Agri Marketplace" width="30" height="30" class="me-2">
+                <img src="/media/logo.jpg" alt="Agri Marketplace" width="30" height="30" class="me-2">
                 <span>Agri Marketplace</span>
             </a>
-
+    
             <!-- Mobile Hamburger Menu -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-
+    
             <!-- Navbar Links -->
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
@@ -38,37 +38,67 @@
                             <button class="btn btn-outline-light" type="submit">Search</button>
                         </form>
                     </li>
-
-                    <!-- Authentication Links -->
+    
+                    <!-- Supplier Profile Dropdown -->
                     {% if user.is_authenticated %}
-                        {% if user.profile.is_supplier %}
-                            <li class="nav-item"><a class="nav-link" href="{% url 'supplier_dashboard' %}">Supplier Dashboard</a></li>
-                        {% else %}
-                            <li class="nav-item"><a class="nav-link" href="{% url 'farmer_dashboard' %}">Farmer Dashboard</a></li>
-                        {% endif %}
-                        <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
-                    {% else %}
-                        <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'register' %}">Register</a></li>
-                    {% endif %}
-
-                   <!-- Cart Icon in Navbar -->
-<li class="nav-item">
-    <a class="nav-link position-relative" href="{% url 'cart_detail' %}" aria-label="View cart">
-        <i class="bi bi-cart fs-4"></i>
-        {% if user.is_authenticated %}
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-badge">
-                {{ user.cart.cart_items.count }}
-                <span class="visually-hidden">items in cart</span>
-            </span>
-        {% endif %}
-    </a>
-</li>
-
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle me-2"></i> {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                            {% if user.profile.is_supplier %}
+                                <li><a class="dropdown-item" href="{% url 'supplier_dashboard' %}">Supplier Dashboard</a></li>
+                            {% else %}
+                                <li><a class="dropdown-item" href="{% url 'farmer_dashboard' %}">my Orders</a></li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">Logout</a></li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'register' %}">Register</a></li>
+                {% endif %}
+                
+    
+                    <!-- Cart Icon -->
+                    <li class="nav-item">
+                        <a class="nav-link position-relative" href="{% url 'cart_detail' %}" aria-label="View cart">
+                            <i class="bi bi-cart fs-3"></i>
+                            {% if user.is_authenticated %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-badge">
+                                {{ user.cart.cart_items.count }}
+                                <span class="visually-hidden">items in cart</span>
+                            </span>
+                            {% endif %}
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
     </nav>
+    
+    <!-- Add this in base.html -->
+{% if messages %}
+<div id="message-popup" class="alert alert-success" style="position: fixed; top: 20px; right: 20px; z-index: 1000; display: none;">
+    {% for message in messages %}
+        <p>{{ message }}</p>
+    {% endfor %}
+</div>
+{% endif %}
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const messagePopup = document.getElementById("message-popup");
+        if (messagePopup) {
+            messagePopup.style.display = "block"; // Show the message
+            setTimeout(() => {
+                messagePopup.style.display = "none"; // Hide it after 3 seconds
+            }, 3000);
+        }
+    });
+</script>
+
 
     <!-- Content -->
     <div class="container mt-4">

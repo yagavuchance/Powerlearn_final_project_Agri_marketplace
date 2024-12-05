@@ -4,8 +4,8 @@ from django.contrib import messages
 from .models import Cart, CartItem
 from products.models import Product
 
-@login_required
-@login_required
+
+
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     cart, created = Cart.objects.get_or_create(user=request.user)
@@ -18,7 +18,7 @@ def add_to_cart(request, product_id):
     messages.success(request, f'{product.name} added to cart')  # Display success message
     return redirect('product_list')  # Redirect to cart details page
 
-@login_required
+
 def cart_detail(request):
     cart_items = request.user.cart.cart_items.all()  # Adjust this query as per your structure
     for item in cart_items:
@@ -40,7 +40,7 @@ def remove_from_cart(request, product_id):
 
     return redirect('cart_detail')  # Redirect back to the cart detail page
 
-@login_required
+
 def update_quantity(request, product_id):
     cart = request.user.cart
     product = get_object_or_404(Product, id=product_id)

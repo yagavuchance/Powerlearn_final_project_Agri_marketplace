@@ -36,9 +36,18 @@ def custom_login(request):
             user = form.get_user()
             login(request, user)
             
+            # Debugging - Check if the correct user is logged in
+            print(f"Logged in as: {request.user.username}")
+            
+            # Check if the user is a supplier or a farmer and redirect
+            if user.profile.is_supplier:
+                return redirect('supplier_dashboard')  # Redirect to the supplier dashboard
+            else:
+                return redirect('product_list')  # Redirect to the farmer dashboard
+            
             # Redirect to the next page if provided, otherwise go to product list
-            next_url = request.GET.get('next', 'product_list')  # Default to 'product_list'
-            return redirect(next_url)
+            # next_url = request.GET.get('next', 'product_list')  # Default to 'product_list'
+            # return redirect(next_url)
         else:
             messages.error(request, "Invalid username or password.")
     else:
@@ -47,26 +56,18 @@ def custom_login(request):
     return render(request, 'users/login.html', {'form': form})
 
 
+
 def custom_logout(request):
     logout(request)
     return redirect('product_list') 
 
-# Supplier Dashboard View
-@login_required
-@supplier_required
-def supplier_dashboard(request):
-    # Get products created by the logged-in supplier
-    products = request.user.products.all()
 
-    # Get orders for the products of the logged-in supplier
-    orders = Order.objects.filter(product__supplier=request.user)
 
-    return render(request, 'users/supplier_dashboard.html', {'products': products, 'orders': orders})
 
 # Farmer Dashboard View
 @login_required
 def farmer_dashboard(request):
     # Get all orders placed by the logged-in farmer
-    orders = Order.objects.filter(customer=request.user)
+    orders = Order.objects.filter(user=request.user)
 
     return render(request, 'users/farmer_dashboard.html', {'orders': orders})
