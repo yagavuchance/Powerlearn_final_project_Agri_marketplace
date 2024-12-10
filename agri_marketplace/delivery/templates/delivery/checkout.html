@@ -1,0 +1,52 @@
+{% extends 'products/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container mt-5">
+    <h3 class="text-center">Checkout</h3>
+    <p class="text-muted text-center">Review your order and provide delivery details.</p>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.media }}
+        {{ form|crispy }}
+
+        <h5 class="mt-4">Order Summary</h5>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if cart and cart.cart_items.exists %}
+                    {% for item in cart.cart_items.all %}
+                    <tr>
+                        <td>{{ item.product.name }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>${{ item.product.price }}</td>
+                        <td>${{ item.quantity|floatformat:2|add:item.product.price|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                    <tr>
+                        <td colspan="3" class="text-end"><strong>Total Price:</strong></td>
+                        <td><strong>${{ cart.total_price }}</strong></td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted">Your cart is empty.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-success">Place Order</button>
+            <a href="{% url 'cart_detail' %}" class="btn btn-secondary">Back to Cart</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

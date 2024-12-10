@@ -14,6 +14,26 @@
     <script src="{% static 'js/main.js' %}"></script>
 </head>
 <body>
+    {% if messages %}
+    <div id="message-popup" class="alert alert-success text-center" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; display: none;">
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const messagePopup = document.getElementById("message-popup");
+            if (messagePopup) {
+                messagePopup.style.display = "block"; // Show the message
+                setTimeout(() => {
+                    messagePopup.style.display = "none"; // Hide it after 3 seconds
+                }, 3000);
+            }
+        });
+    </script>
+    
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-success shadow">
         <div class="container-fluid">
@@ -52,14 +72,13 @@
                                 <li><a class="dropdown-item" href="{% url 'farmer_dashboard' %}">my Orders</a></li>
                             {% endif %}
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">Logout</a></li>
+                            <li><a class="dropdown-item text-danger" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a></li>
                         </ul>
                     </li>
                 {% else %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'register' %}">Register</a></li>
                 {% endif %}
-                
     
                     <!-- Cart Icon -->
                     <li class="nav-item">
@@ -78,28 +97,6 @@
         </div>
     </nav>
     
-    <!-- Add this in base.html -->
-{% if messages %}
-<div id="message-popup" class="alert alert-success" style="position: fixed; top: 20px; right: 20px; z-index: 1000; display: none;">
-    {% for message in messages %}
-        <p>{{ message }}</p>
-    {% endfor %}
-</div>
-{% endif %}
-
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const messagePopup = document.getElementById("message-popup");
-        if (messagePopup) {
-            messagePopup.style.display = "block"; // Show the message
-            setTimeout(() => {
-                messagePopup.style.display = "none"; // Hide it after 3 seconds
-            }, 3000);
-        }
-    });
-</script>
-
-
     <!-- Content -->
     <div class="container mt-4">
         {% block content %}
@@ -113,5 +110,24 @@
 
     <!-- Bootstrap JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Logout Confirmation Modal -->
+    <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to log out?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

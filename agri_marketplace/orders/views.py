@@ -5,27 +5,30 @@ from products.models import Product
 from cart.models import Cart, CartItem  
 from .models import Order, OrderItem # Keep the import for Order and OrderItem
 from django.contrib import messages
-
+from delivery.models import DeliveryDetails
 
 @login_required(login_url='/users/login/')
-def place_order(request):
-    # Fetch the user's cart
-    cart = Cart.objects.get(user=request.user)
-    if not cart.cart_items.exists():
-        return redirect('cart_detail')  # Redirect if the cart is empty
+def place_order(request, delivery_id):
+    # Retrieve the user's cart
+    cart = Cart.objects.filter(user=request.user).first()
 
-    # Initialize the total price for the order
-    total_price = 0
+    # Check if the cart exists and has items
+    if not cart or not cart.cart_items.exists():
+        messages.error(request, "Your cart is empty. Add items before placing an order.")
+        return redirect('cart_detail')
 
-    # Calculate total price for all cart items
-    for item in cart.cart_items.all():
-        total_price += item.product.price * item.quantity
+    # Retrieve delivery details by ID
+    delivery_details = get_object_or_404(DeliveryDetails, id=delivery_id, user=request.user)
 
-    # Create the order (without product/quantity)
+    # Calculate total price
+    total_price = sum(item.product.price * item.quantity for item in cart.cart_items.all())
+
+    # Create the order
     order = Order.objects.create(
-        user=request.user,  # Use the logged-in user as the customer
-        total_price=total_price,  # Store the total price
-        status='Pending'
+        user=request.user,
+        delivery_details=delivery_details,
+        total_price=total_price,
+        status="Pending",  # Assuming you have a status field in the Order model
     )
 
     # Create OrderItems for each cart item
@@ -35,14 +38,22 @@ def place_order(request):
             product=item.product,
             quantity=item.quantity,
             price=item.product.price,
-            total_price=item.product.price * item.quantity,  # Calculate total price for this item
+            total_price=item.product.price * item.quantity,
         )
 
-    # Optionally, clear the cart after placing the order
-    cart.cart_items.all().delete()
+    # Clear the cart after placing the order
+    cart.cart_items.all().delete()  # Clear all items in the cart
 
     # Redirect to an order confirmation page
-    return redirect('order_confirmation', order_id=order.id)  # Ensure this URL exists
+    messages.success(request, f"Order #{order.id} has been placed successfully.")
+    return redirect('order_confirmation', order_id=order.id)
+
+
+
+def order_detail(request, order_id):
+    # Use 'user' instead of 'customer'
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    return render(request, 'orders/order_detail.html', {'order': order})
 
 
 
@@ -51,22 +62,18 @@ def order_success(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
     return render(request, 'orders/order_success.html', {'order': order})
 
-@login_required(login_url='/users/login/')
-def order_confirmation(request, order_id):
-    order = get_object_or_404(Order, id=order_id, user=request.user)
-    return render(request, 'orders/order_confirmation.html', {'order': order})
+
 
 @login_required
 def cancel_order(request, order_id):
-    order = get_object_or_404(Order, id=order_id, user=request.user)  # Ensure the order belongs to the user
+    order = get_object_or_404(Order, id=order_id, user=request.user)
 
-    if order.status in ["Pending", "Processing"]:
-        order.status = "Canceled"  # Update the status
+    if order.status == 'Pending':
+        order.status = 'Cancelled'
         order.save()
-        messages.success(request, f"Order {order.id} has been successfully canceled.")
+        messages.success(request, f"Order {order.id} has been cancelled successfully.")
     else:
-        messages.error(request, "This order cannot be canceled.")
+        messages.error(request, "This order cannot be cancelled.")
 
-    return redirect('my_orders')
-
+    return redirect('farmer_dashboard')
 

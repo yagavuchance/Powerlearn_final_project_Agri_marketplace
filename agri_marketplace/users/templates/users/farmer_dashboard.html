@@ -1,38 +1,73 @@
 {% extends 'products/base.html' %}
 
 {% block content %}
-<h2>Welcome, {{ user.username }}!</h2>
-<h3>Your Orders</h3>
-<div class="row">
-    {% if orders %}
-        {% for order in orders %}
-            <div class="col-md-12 mb-3">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Order ID: {{ order.id }}</h5>
-                        <p class="card-text">Status: <strong>{{ order.status }}</strong></p>
-                        <p class="card-text">Order Date: {{ order.order_date|date:"F j, Y, g:i a" }}</p>
-                        <p class="card-text">Total Price: ${{ order.total_price }}</p>
-                        
-                        <h6>Products:</h6>
-                        <ul class="list-group">
-                            {% for item in order.order_items.all %}
-                                <li class="list-group-item">
-                                    <strong>{{ item.product.name }}</strong><br>
-                                    Quantity: {{ item.quantity }}<br>
-                                    Price: ${{ item.price }} each<br>
-                                    Subtotal: ${{ item.total_price }}
-                                </li>
-                            {% endfor %}
-                        </ul>
+<div class="container py-5">
+    <h3 class="text-center mb-4">Your Orders</h3>
+    
+    <div class="row">
+        {% if orders %}
+            {% for order in orders %}
+                <div class="col-md-12 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="card-title mb-0">Order ID: {{ order.id }}</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Status:</strong> 
+                                <span class="badge 
+                                    {% if order.status == 'Completed' %}bg-success
+                                    {% elif order.status == 'Pending' %}bg-warning text-dark
+                                    {% elif order.status == 'Shipped' %}bg-primary
+                                    {% else %}bg-secondary
+                                    {% endif %}">
+                                    {{ order.status }}
+                                </span>
+                            </p>
+                            <p><strong>Order Date:</strong> {{ order.order_date|date:"F j, Y, g:i a" }}</p>
+                            <p><strong>Total Price:</strong> ${{ order.total_price }}</p>
+
+                            <!-- Cancel Button for Pending Orders -->
+                            {% if order.status == 'Pending' %}
+                                <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#cancelOrderModal-{{ order.id }}">
+                                    Cancel Order
+                                </button>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer text-end">
+                            <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-outline-success">View Details</a>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Cancel Order Modal -->
+                <div class="modal fade" id="cancelOrderModal-{{ order.id }}" tabindex="-1" aria-labelledby="cancelOrderModalLabel-{{ order.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="cancelOrderModalLabel-{{ order.id }}">Cancel Order</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                Are you sure you want to cancel this order? This action cannot be undone.
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <form action="{% url 'cancel_order' order.id %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger">Cancel Order</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-md-12">
+                <div class="alert alert-info text-center">
+                    <p>You have no orders yet. <a href="{% url 'product_list' %}">Start shopping now!</a></p>
+                </div>
             </div>
-        {% endfor %}
-    {% else %}
-        <div class="col-md-12">
-            <p>You have no orders yet.</p>
-        </div>
-    {% endif %}
+        {% endif %}
+    </div>
 </div>
 {% endblock %}

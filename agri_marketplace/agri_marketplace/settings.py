@@ -43,7 +43,10 @@ INSTALLED_APPS = [
     'reviews',
     'users',
     'cart',
+    'delivery',
     'suppliers',
+    'crispy_forms',
+    'crispy_bootstrap5'
 ]
 
 MIDDLEWARE = [
@@ -55,6 +58,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# Configure the template pack
+CRISPY_TEMPLATE_PACK = 'bootstrap5' 
 
 ROOT_URLCONF = 'agri_marketplace.urls'
 

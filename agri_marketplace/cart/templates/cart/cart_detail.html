@@ -1,48 +1,49 @@
 {% extends 'products/base.html' %}
 
 {% block content %}
-<h1>Your Cart</h1>
+<div class="container mt-5">
+    <h1>Your Cart</h1>
 
-{% if cart.cart_items.count %}
-<table class="table">
-    <thead>
-        <tr>
-            <th>Product</th>
-            <th>Quantity</th>
-            <th>Price</th>
-            <th>Total</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for item in cart.cart_items.all %}
-        <tr>
-            <td>{{ item.product.name }}</td>
-            <td>{{ item.quantity }}</td>
-            <td>${{ item.product.price }}</td>
-            <td>${{ item.total_price }}</td>
+    {% if cart.cart_items.exists %}
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Total</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in cart.cart_items.all %}
+            <tr>
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>${{ item.product.price }}</td>
+                <td>${{ item.quantity|floatformat:2|add:item.product.price|floatformat:2 }}</td>
+                <!-- Form to remove item -->
+                <td>
+                    <form method="POST" action="{% url 'remove_from_cart' item.product.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Remove</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
-            <!-- Form to remove item -->
-            <td>
-                <form method="POST" action="{% url 'remove_from_cart' item.product.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">Remove</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <h3 class="text-end">Total: ${{ cart.total_price }}</h3>
 
-<h3>Total: ${{ cart.total_price }}</h3>
-
-<!-- Form to place an order for all products in the cart -->
-<form method="POST" action="{% url 'place_order' %}">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-success mt-3">Order Now</button>
-</form>
-
-{% else %}
-<p>Your cart is empty.</p>
-{% endif %}
+    <!-- Checkout Button -->
+    <div class="text-end mt-3">
+        <form method="GET" action="{% url 'checkout' %}">
+            <button type="submit" class="btn btn-success mb-4">Proceed to Checkout</button>
+        </form>
+    </div>
+    {% else %}
+    <p>Your cart is empty.</p>
+    {% endif %}
+</div>
 {% endblock %}

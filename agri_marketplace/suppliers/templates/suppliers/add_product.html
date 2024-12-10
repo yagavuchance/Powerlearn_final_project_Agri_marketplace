@@ -1,10 +1,36 @@
 {% extends 'products/base.html' %}
+{% load crispy_forms_tags %}
+
 {% block content %}
-<h2>Add Product</h2>
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-success">Add Product</button>
-</form>
-<a href="{% url 'supplier_dashboard' %}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <!-- Page Header -->
+            <h2 class="text-center mb-4">Add a New Product</h2>
+
+            <!-- Product Form -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Crispy Form -->
+                        {{ form.media }}
+                        {{ form|crispy }}
+
+                        <!-- Submit Button -->
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-plus-circle"></i> Add Product
+                            </button>
+                            <a href="{% url 'supplier_dashboard' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left-circle"></i> Back to Dashboard
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
