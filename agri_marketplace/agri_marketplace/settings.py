@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'cart',
     'delivery',
     'suppliers',
+    'payment',
     'crispy_forms',
     'crispy_bootstrap5'
 ]
@@ -61,6 +62,8 @@ MIDDLEWARE = [
 
 # Configure the template pack
 CRISPY_TEMPLATE_PACK = 'bootstrap5' 
+
+
 
 ROOT_URLCONF = 'agri_marketplace.urls'
 

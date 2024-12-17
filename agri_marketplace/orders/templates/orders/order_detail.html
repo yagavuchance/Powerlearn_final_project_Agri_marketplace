@@ -10,7 +10,7 @@
         </div>
         <div class="card-body">
             <p><strong>Ordered By:</strong> {{ order.user.username }}</p>
-            <p><strong>Status:</strong> 
+            <p><strong>Order Status:</strong> 
                 <span class="badge {% if order.status == 'Completed' %}bg-success{% elif order.status == 'Pending' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
                     {{ order.status }}
                 </span>
@@ -23,6 +23,28 @@
             <p><strong>Location:</strong> {{ order.delivery_details.location }}</p>
             <p><strong>Phone Number:</strong> {{ order.delivery_details.phone_number }}</p>
             <p><strong>Payment Method:</strong> {{ order.delivery_details.get_payment_method_display }}</p>
+            <p><strong>Payment Status:</strong> 
+                <span class="badge {% if order.payment_status == 'Paid' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                    {% if order.payment_status == 'Paid' %}
+                        Paid
+                    {% else %}
+                        Pending Payment
+                    {% endif %}
+                </span>
+            </p>
+            
+            {% if order.payments.exists %}
+                <h6 class="mt-4">Payment Details:</h6>
+                <ul>
+                    {% for payment in order.payments.all %}
+                        <li>
+                            <strong>Payment Date:</strong> {{ payment.timestamp|date:"F j, Y, g:i a" }}<br>
+                            <strong>Amount Paid:</strong> ${{ payment.amount_paid }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            
             {% else %}
             <p><em>Delivery details not provided.</em></p>
             {% endif %}
@@ -30,14 +52,24 @@
             <h6 class="mt-4">Products:</h6>
             <ul class="list-group">
                 {% for item in order.order_items.all %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <li class="list-group-item d-flex align-items-center">
+                        <!-- Product Image -->
+                        {% if item.product.image %}
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="img-thumbnail me-3" style="width: 80px; height: 80px; object-fit: cover;">
+                        {% else %}
+                        <div class="me-3" style="width: 80px; height: 80px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                            <span class="text-muted">No Image</span>
+                        </div>
+                        {% endif %}
+
+                        <!-- Product Details -->
                         <div>
                             <strong>{{ item.product.name }}</strong><br>
                             Quantity: {{ item.quantity }}<br>
                             Price: ${{ item.price }} each<br>
                             Subtotal: ${{ item.total_price }}
                         </div>
-                        <span class="badge bg-info text-dark">${{ item.total_price }}</span>
+                        <span class="badge bg-info text-dark ms-auto">${{ item.total_price }}</span>
                     </li>
                 {% endfor %}
             </ul>

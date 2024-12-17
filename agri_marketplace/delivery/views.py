@@ -8,12 +8,13 @@ from cart.models import Cart
 from orders.models import Order, OrderItem
 
 
-
 @login_required(login_url='/users/login/')
 def checkout(request):
     if request.method == 'POST':
         form = DeliveryDetailsForm(request.POST)
         if form.is_valid():
+            payment_method = form.cleaned_data.get('payment_method')  # Retrieve payment method
+
             with transaction.atomic():  # Use atomic transaction for data integrity
                 # Save delivery details
                 delivery_details = form.save(commit=False)
@@ -31,6 +32,7 @@ def checkout(request):
                     order = Order.objects.create(
                         user=request.user,
                         delivery_details=delivery_details,
+                        payment_method=payment_method,  # Save payment method in Order
                         total_price=total_price,
                         status="Pending",
                     )
@@ -48,8 +50,17 @@ def checkout(request):
                     # Clear the cart items
                     cart.cart_items.all().delete()
 
-                    messages.success(request, f'Order #{order.id} placed successfully.')
-                    return redirect('order_confirmation', order_id=order.id)
+                    # Redirect based on payment method
+                    if payment_method == 'Debit':  # Redirect to payment checkout for Debit Card
+                        return redirect('payment_checkout', order_id=order.id)
+                    elif payment_method == 'PayPal':
+                        return redirect('payment_checkout', order_id=order.id)
+                    elif payment_method == 'MM':
+                        # Add logic for Mobile Money or redirect to its payment page
+                        return redirect('payment_checkout', order_id=order.id)
+                    elif payment_method == 'COD':
+                        messages.success(request, f'Order #{order.id} placed successfully. Payment will be collected on delivery.')
+                        return redirect('order_confirmation', order_id=order.id)
                 else:
                     messages.error(request, 'Your cart is empty. Add items before proceeding to checkout.')
                     return redirect('cart_detail')
@@ -62,6 +73,8 @@ def checkout(request):
     cart, created = Cart.objects.get_or_create(user=request.user)
 
     return render(request, 'delivery/checkout.html', {'form': form, 'cart': cart})
+
+
 
 
 

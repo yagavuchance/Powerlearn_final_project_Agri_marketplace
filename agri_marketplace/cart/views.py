@@ -52,14 +52,30 @@ def cart_detail(request):
     return render(request, 'cart/cart_detail.html', {'cart': cart})
 
 def remove_from_cart(request, product_id):
-    cart = request.user.cart
     product = get_object_or_404(Product, id=product_id)
-    cart_item = get_object_or_404(CartItem, cart=cart, product=product)
 
-    # Remove the item
-    cart_item.delete()
+    if request.user.is_authenticated:
+        # Retrieve the cart for the logged-in user
+        cart = Cart.objects.filter(user=request.user).first()
+    else:
+        # Retrieve the cart for the anonymous user using the session
+        cart_id = request.session.get('cart_id')
+        cart = get_object_or_404(Cart, id=cart_id) if cart_id else None
 
-    return redirect('cart_detail')  # Redirect back to the cart detail page
+    if cart:
+        # Find the cart item and remove it
+        cart_item = cart.cart_items.filter(product=product).first()
+        if cart_item:
+            cart_item.delete()
+            messages.success(request, f"{product.name} was removed from your cart.")
+        else:
+            messages.error(request, "This item is not in your cart.")
+    else:
+        messages.error(request, "You don't have a cart.")
+
+    return redirect('cart_detail')
+
+
 
 
 def update_quantity(request, product_id):
